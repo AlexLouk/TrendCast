@@ -6,35 +6,48 @@ import os
 load_dotenv()
 
 # Fetch variables
-USER = os.getenv("user")
-PASSWORD = os.getenv("password")
-HOST = os.getenv("host")
-PORT = os.getenv("port")
-DBNAME = os.getenv("dbname")
+USER = os.getenv("USER")
+PASSWORD = os.getenv("PASSWORD")
+HOST = os.getenv("HOST")
+PORT = os.getenv("PORT")
+DBNAME = os.getenv("DBNAME")
 
-# Connect to the database
-try:
-    connection = psycopg2.connect(
+def get_connection():
+    return(
+        psycopg2.connect(
         user=USER,
         password=PASSWORD,
         host=HOST,
         port=PORT,
         dbname=DBNAME
+        )
     )
-    print("Connection successful!")
-    
-    # Create a cursor to execute SQL queries
-    cursor = connection.cursor()
-    
-    # Example query
-    cursor.execute("SELECT NOW();")
-    result = cursor.fetchone()
-    print("Current Time:", result)
 
-    # Close the cursor and connection
+def check_user(email):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT {email} FROM users")
+
+def create_users_table():
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("CREATE TABLE users (" \
+    "id SERIAL PRIMARY KEY," \
+    "email VARCHAR(255) UNIQUE NOT NULL," \
+    "password_hash VARCHAR(255) NOT NULL," \
+    "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);"
+    )
+    conn.commit()
     cursor.close()
-    connection.close()
-    print("Connection closed.")
+    conn.close()
 
-except Exception as e:
-    print(f"Failed to connect: {e}")
+
+# Example query
+#cursor.execute("SELECT NOW();")
+#result = cursor.fetchone()
+#print("Current Time:", result)
+
+# Close the cursor and connection
+#cursor.close()
+#connection.close()
+#print("Connection closed.")
